@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Physics Simulator - Gravity, Friction, Collisions &amp; Joints</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="logo">
+      <span class="icon">⚛️</span>
+      <div>
+        <h1>Physics Simulator</h1>
+        <p>Gravity • Friction • Collisions • Constraints &amp; Joints (API Powered)</p>
+      </div>
+    </div>
+    <div class="api-status" id="apiStatus">
+      <span class="dot"></span>
+      <span id="statusText">API Connected</span>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-layout">
+    
+    <!-- Simulation Canvas Area -->
+    <section class="simulation-section">
+      <div class="canvas-container">
+        <canvas id="gravityCanvas" width="700" height="500"></canvas>
+        <div class="canvas-hint">💡 Drag a ball to move/throw | Right-click to remove | Click space to drop</div>
+      </div>
+
+      <!-- Quick Canvas Action Bar -->
+      <div class="canvas-actions">
+        <button id="btnDropBall" class="btn btn-primary">➕ 1 Ball</button>
+        <button id="btnDropMulti" class="btn btn-primary" style="background-color: #8b5cf6;">💥 3 Balls (Collisions)</button>
+        <button id="btnPendulum" class="btn btn-primary" style="background-color: #f59e0b;">🔗 Pendulum Rod</button>
+        <button id="btnSpring" class="btn btn-primary" style="background-color: #10b981;">〰️ Spring Joint</button>
+        <button id="btnPushUp" class="btn btn-secondary">🚀 Push Up</button>
+        <button id="btnReset" class="btn btn-outline">🔄 Reset</button>
+      </div>
+    </section>
+
+    <!-- Sidebar Controls -->
+    <aside class="control-sidebar">
+      
+      <!-- 1. Gravity Control (API) -->
+      <div class="card">
+        <h3>1. Gravity Controller</h3>
+        <p class="subtitle">Calls <code>POST /api/gravity</code></p>
+        
+        <div class="preset-grid">
+          <button class="preset-btn grav-btn active" data-preset="earth">
+            <span class="p-icon">🌍</span>
+            <span class="p-name">Earth</span>
+            <span class="p-val">9.8 m/s²</span>
+          </button>
+          <button class="preset-btn grav-btn" data-preset="moon">
+            <span class="p-icon">🌙</span>
+            <span class="p-name">Moon</span>
+            <span class="p-val">1.6 m/s²</span>
+          </button>
+          <button class="preset-btn grav-btn" data-preset="mars">
+            <span class="p-icon">🔴</span>
+            <span class="p-name">Mars</span>
+            <span class="p-val">3.7 m/s²</span>
+          </button>
+          <button class="preset-btn grav-btn" data-preset="jupiter">
+            <span class="p-icon">🪐</span>
+            <span class="p-name">Jupiter</span>
+            <span class="p-val">24.8 m/s²</span>
+          </button>
+          <button class="preset-btn grav-btn" data-preset="zero" style="grid-column: span 2;">
+            <span class="p-icon">🛸</span>
+            <span class="p-name">Zero-G (Space)</span>
+            <span class="p-val">0.0 m/s²</span>
+          </button>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Custom Gravity (g):</span>
+            <span id="customGVal">9.8 m/s²</span>
+          </div>
+          <input type="range" id="sliderGravity" min="0" max="30" step="0.5" value="9.8">
+        </div>
+      </div>
+
+      <!-- 2. Friction Control (API) -->
+      <div class="card">
+        <h3>2. Surface Friction (μ)</h3>
+        <p class="subtitle">Calls <code>POST /api/friction</code></p>
+        
+        <div class="preset-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <button class="preset-btn fric-btn" data-preset="ice">
+            <span class="p-icon">🧊</span>
+            <span class="p-name">Ice</span>
+            <span class="p-val">μ = 0.01</span>
+          </button>
+          <button class="preset-btn fric-btn active" data-preset="normal">
+            <span class="p-icon">🟢</span>
+            <span class="p-name">Normal</span>
+            <span class="p-val">μ = 0.35</span>
+          </button>
+          <button class="preset-btn fric-btn" data-preset="rough">
+            <span class="p-icon">🟫</span>
+            <span class="p-name">Rough</span>
+            <span class="p-val">μ = 0.85</span>
+          </button>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span>Friction Coefficient (μ):</span>
+            <span id="customFricVal">0.35</span>
+          </div>
+          <input type="range" id="sliderFriction" min="0" max="1" step="0.05" value="0.35">
+        </div>
+      </div>
+
+      <!-- 3. Constraints & Joints (API) -->
+      <div class="card">
+        <h3>3. Constraints &amp; Joints</h3>
+        <p class="subtitle">Calls <code>POST /api/joints/preset</code></p>
+        
+        <div class="preset-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <button class="preset-btn joint-preset-btn" data-preset="pendulum">
+            <span class="p-icon">🔗</span>
+            <span class="p-name">Pendulum</span>
+            <span class="p-val">Fixed Rod</span>
+          </button>
+          <button class="preset-btn joint-preset-btn" data-preset="spring">
+            <span class="p-icon">〰️</span>
+            <span class="p-name">Spring</span>
+            <span class="p-val">Hooke's Law</span>
+          </button>
+          <button class="preset-btn joint-preset-btn" data-preset="dumbbell">
+            <span class="p-icon">⛓️</span>
+            <span class="p-name">Dumbbell</span>
+            <span class="p-val">2 Balls Rod</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. Real-time Telemetry -->
+      <div class="card">
+        <h3>4. Real-time Telemetry</h3>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <span class="stat-label">Gravity</span>
+            <span class="stat-num" id="statGravity">9.8 m/s²</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">Friction</span>
+            <span class="stat-num" id="statFriction" style="color: #fbbf24;">μ = 0.35</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">Active Joints</span>
+            <span class="stat-num" id="statJoints" style="color: #38bdf8;">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">Total Collisions</span>
+            <span class="stat-num" id="statCollisions" style="color: #f43f5e;">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Live API Activity Log -->
+      <div class="card">
+        <h3>5. REST API Activity Log</h3>
+        <p class="subtitle">Live HTTP Requests &amp; Responses</p>
+        <div class="api-log" id="apiLog">
+          <div class="log-entry">[INIT] Loaded Physics Engine</div>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <script src="/js/script.js"></script>
+</body>
+</html>
