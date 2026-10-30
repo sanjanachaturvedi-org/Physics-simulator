@@ -13,7 +13,12 @@ import random
 
 app = Flask(__name__, static_folder="static")
 CORS(app)
-
+@app.route("/googleff35e370e99bd2e9.html")
+def google_verification():
+    return send_from_directory(
+        app.root_path,
+        "googleff35e370e99bd2e9.html"
+    )
 # 1. Gravity Settings
 GRAVITY_PRESETS = {
     "earth": {"name": "Earth", "value": 9.8, "scale": 600.0},
